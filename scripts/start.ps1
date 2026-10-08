@@ -9,13 +9,16 @@ $logs  = Join-Path $home_ 'logs'
 $url   = "http://127.0.0.1:$Port/"
 
 if (-not (Test-Path $wasm)) { Write-Host "NOT_BUILT: Noch nicht eingerichtet. Zuerst /pokemon bzw. setup.ps1 -Consent ausfuehren."; exit 1 }
-$node = (Get-Command node -ErrorAction SilentlyContinue | Select-Object -First 1).Source
-if (-not $node) { Write-Host "NODE_MISSING: Node.js fehlt (winget install OpenJS.NodeJS.LTS)."; exit 4 }
+$ownNode = Join-Path $home_ 'node\node.exe'
+$node = if (Test-Path $ownNode) { $ownNode } else { (Get-Command node -ErrorAction SilentlyContinue | Select-Object -First 1).Source }
+if (-not $node) { Write-Host "NODE_MISSING: Node.js fehlt. Bitte /pokemon ausfuehren, das richtet es ein."; exit 4 }
 
 $c = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($c) {
-  $p = Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue
-  if ($p -and $p.ProcessName -ne 'node') { Write-Host "PORT_BUSY: Port $Port ist von '$($p.ProcessName)' belegt."; exit 2 }
+  # Ist es wirklich unser Spielserver? Er liefert die .wasm-Datei mit passendem Typ aus.
+  $ours = $false
+  try { $r = Invoke-WebRequest -Uri ($url + 'build/wasm/pokeemerald.wasm') -Method Head -UseBasicParsing -TimeoutSec 4; $ours = ($r.StatusCode -eq 200 -and ([string]$r.Headers['Content-Type']) -like '*wasm*') } catch {}
+  if (-not $ours) { $p = Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue; Write-Host "PORT_BUSY: Port $Port ist von '$($p.ProcessName)' belegt und antwortet nicht wie das Spiel."; exit 2 }
   Write-Host "Server laeuft bereits (PID $($c.OwningProcess))."
 } else {
   New-Item -ItemType Directory -Force $logs | Out-Null

@@ -13,12 +13,12 @@ Windows 10/11 mit Git for Windows. Die Skripte liegen im Plugin-Ordner: zwei Ebe
 
 1. **Plan holen (lädt nichts):**
    `powershell -NoProfile -ExecutionPolicy Bypass -File "<Plugin-Ordner>\scripts\setup.ps1"`
-   Lies die Zeilen `PLAN:`, `SETUP_STATE=`, `PENDING_MB=` und `ADMIN_PROMPT=`. Der Exit-Code ist im Plan-Modus immer 0: `SETUP_STATE=READY` heißt alles da, weiter bei Schritt 4. `SETUP_STATE=PENDING` heißt es fehlt etwas, weiter bei Schritt 2 (das ist kein Fehler). Exit 1 mit `GIT_MISSING` oder `UNSUPPORTED`: dem Nutzer den Grund in einem Satz sagen und stoppen.
+   Lies die Zeilen `PLAN:`, `SETUP_STATE=`, `PENDING_MB=` und `ADMIN_PROMPT=`. Der Exit-Code ist im Plan-Modus immer 0: `SETUP_STATE=READY` heißt alles da, weiter bei Schritt 4. `SETUP_STATE=PENDING` heißt es fehlt etwas, weiter bei Schritt 2 (das ist kein Fehler). Exit 1 mit `GIT_MISSING`, `UNSUPPORTED` oder `HOME_UNSAFE`: dem Nutzer den Grund in einem Satz sagen und stoppen.
 
-2. **Einmal um Erlaubnis fragen**, nur wenn etwas fehlt. Zeige die offenen Zeilen des Plans als kurze Liste mit Größen, nenne die Gesamtgröße (`PENDING_MB`) und die Dauer (ca. 10 bis 25 Minuten, je nach Leitung). Ist `ADMIN_PROMPT=True`, sage dazu: „Gleich erscheint eine Windows-Abfrage (UAC). Bitte auf Ja klicken.“ Ohne ausdrückliches Ja nichts herunterladen oder installieren. Das Ja des Nutzers gilt nur für diese Liste.
+2. **Einmal um Erlaubnis fragen**, nur wenn etwas fehlt. Zeige die offenen Zeilen des Plans als kurze Liste mit Größen, nenne die Gesamtgröße (`PENDING_MB`) und die Dauer (ca. 7 bis 15 Minuten, je nach Leitung; der Bau selbst dauert etwa 5 Minuten) sowie den Platzbedarf (rund 1,6 GB). Sage dazu: Es sind keine Administratorrechte nötig, und es erscheint keine Windows-Abfrage. Ohne ausdrückliches Ja nichts herunterladen oder installieren. Das Ja des Nutzers gilt nur für diese Liste.
 
 3. **Einrichten, mit Aufsicht:**
-   Starte `setup.ps1 -Consent` als Hintergrundbefehl und lies seine Ausgabe alle 2 Minuten. Es ist fertig bei `SETUP_OK`. Bei `FEHLER:` zeige dem Nutzer die Zeile und den Log-Pfad (`%LOCALAPPDATA%\pokemon-in-claude\logs\`). Hängt es 10 Minuten ohne neue Ausgabe oder neue Log-Zeilen, melde es dem Nutzer. Beende nur Prozesse, die du selbst gestartet hast. Starte Installer mit Admin-Abfrage nie unbeaufsichtigt.
+   Starte `setup.ps1 -Consent` als Hintergrundbefehl und lies seine Ausgabe alle 2 Minuten. Es ist fertig bei `SETUP_OK`. Bei `FEHLER:` (Exit 20) zeige dem Nutzer die Zeile und den Log-Pfad (`%LOCALAPPDATA%\pokemon-in-claude\logs\`). Ein erneuter Aufruf von `setup.ps1 -Consent` setzt dort fort, wo es stand. Hängt es 10 Minuten ohne neue Ausgabe oder neue Log-Zeilen, melde es dem Nutzer. Beende nur Prozesse, die du selbst gestartet hast.
 
 4. **Spiel starten:**
    `powershell -NoProfile -ExecutionPolicy Bypass -File "<Plugin-Ordner>\scripts\start.ps1"`

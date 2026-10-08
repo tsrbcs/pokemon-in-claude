@@ -14,6 +14,7 @@ if (-not $Test) {
   try {
     $raw = [Console]::In.ReadToEnd()
     if ($raw) { $j = $raw | ConvertFrom-Json; if ($j.message) { $msg = [string]$j.message } }
+    if ($msg.Length -gt 200) { $msg = $msg.Substring(0, 200) + '...' }
   } catch {}
 }
 

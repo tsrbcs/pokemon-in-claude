@@ -23,7 +23,8 @@ Der Ping ist standardmäßig aus. Zum Einschalten siehe „Ping einschalten“.
 
 - Windows 10 oder 11
 - [Git for Windows](https://git-scm.com/download/win)
-- Beim ersten Einrichten rund 1 GB Download und etwa 15 bis 25 Minuten. Windows fragt einmal nach Administratorrechten (für LLVM). Klicke dann auf „Ja“.
+- Beim ersten Einrichten rund 310 MB Download und etwa 7 bis 15 Minuten (gemessen: 6,9 Minuten bei schneller Leitung, davon der Bau etwa 5 Minuten). Es sind **keine Administratorrechte** nötig, und Windows zeigt keine Abfrage.
+- Plattenplatz: rund 1,6 GB unter `%LOCALAPPDATA%\pokemon-in-claude\` (die Programme entpacken sich größer, als sie zu laden sind).
 
 ## Was heruntergeladen wird
 
@@ -31,14 +32,14 @@ Nichts, bevor du zustimmst. Das Plugin selbst enthält keine Nintendo-Dateien un
 
 | Was | Größe | Zweck |
 |---|---|---|
-| LLVM (winget) | ca. 610 MB | Compiler `clang` und `wasm-ld` (Admin-Abfrage) |
-| WinLibs MinGW (winget) | ca. 261 MB | `gcc`, `g++`, `make`, `cmake` für die Hilfswerkzeuge |
-| uv (winget) | ca. 17 MB | startet die Python-Skripte, lädt beim ersten Lauf ca. 30 MB Python |
-| Node.js (winget), falls nicht vorhanden | ca. 30 MB | kleiner lokaler Server (nur `127.0.0.1`) |
+| Zig 0.17.0 | ca. 96 MB | Compiler (`clang`) und Linker (`wasm-ld`) für WebAssembly |
+| WinLibs MinGW (7z) | ca. 105 MB | `gcc`, `g++`, `make`, `cmake` für die Hilfswerkzeuge |
+| uv | ca. 17 MB | startet die Python-Skripte, lädt beim ersten Lauf ca. 30 MB Python |
+| Node.js (portabel), falls nicht vorhanden | ca. 36 MB | kleiner lokaler Server (nur `127.0.0.1`) |
 | zlib und libpng (Quellcode) | ca. 3 MB | mit festen SHA256-Prüfsummen, wird lokal gebaut |
 | Spiel-Quellcode `tripplyons/pokeemerald-wasm` | ca. 55 MB | fester Stand, Commit `fd83f5b6` |
 
-Alles landet unter `%LOCALAPPDATA%\pokemon-in-claude\`.
+Alles landet unter `%LOCALAPPDATA%\pokemon-in-claude\`. Es wird nichts außerhalb dieses Ordners installiert (kein PATH-Eintrag, keine Registry, keine Admin-Rechte). Die Downloads laufen alle gleichzeitig über HTTPS, jede Datei wird vor dem Entpacken gegen ihre feste SHA256-Prüfsumme geprüft. Bricht etwas ab, setzt ein erneutes `/pokemon` dort fort, wo es stand.
 
 ## Sicherheit
 
@@ -74,7 +75,7 @@ Lege eine leere Datei `%LOCALAPPDATA%\pokemon-in-claude\ping-on` an. Solange sie
 /plugin uninstall pokemon-in-claude@pokemon-in-claude
 ```
 
-Danach den Ordner `%LOCALAPPDATA%\pokemon-in-claude` löschen. Die per winget installierten Programme bleiben bestehen und lassen sich mit `winget uninstall` entfernen.
+Danach den Ordner `%LOCALAPPDATA%\pokemon-in-claude` löschen. Mehr gibt es nicht zu entfernen, denn außerhalb dieses Ordners wurde nichts installiert.
 
 ## Rechtliches
 

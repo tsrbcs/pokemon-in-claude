@@ -55,10 +55,41 @@ index 94df239..ff88890 100644
  <body>
    <main class="shell" aria-label="pokeemerald-wasm emulator">
 diff --git a/web/server.mjs b/web/server.mjs
-index 32bcf02..ff06a0c 100644
+index 32bcf02..fcf357e 100644
 --- a/web/server.mjs
 +++ b/web/server.mjs
-@@ -30,7 +30,7 @@ createServer((req, res) => {
+@@ -1,5 +1,5 @@
+ import { createReadStream, existsSync, statSync } from 'node:fs';
+-import { extname, join, normalize, resolve } from 'node:path';
++import { extname, join, normalize, resolve, sep } from 'node:path';
+ import { createServer } from 'node:http';
+ 
+ const root = resolve(process.cwd());
+@@ -12,13 +12,21 @@ const types = new Map([
+ ]);
+ 
+ function fileFor(url) {
+-  const pathname = new URL(url, `http://localhost:${requestedPort}`).pathname;
++  let pathname;
++  try { pathname = decodeURIComponent(new URL(url, `http://localhost:${requestedPort}`).pathname); } catch { return null; }
+   const relative = pathname === '/' ? 'web/index.html' : pathname.slice(1);
++  // Nur die Spielseite und die gebaute .wasm ausliefern, nicht das ganze Repository (z. B. .git).
++  if (!(relative.startsWith('web/') || relative.startsWith('build/wasm/'))) return null;
+   const file = resolve(root, normalize(relative));
+-  return file.startsWith(root) ? file : null;
++  return file.startsWith(root + sep) ? file : null;
+ }
+ 
+ createServer((req, res) => {
++  // Gegen DNS-Rebinding: nur Anfragen an localhost oder 127.0.0.1 beantworten.
++  if (!/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(req.headers.host || '')) {
++    res.writeHead(403).end('forbidden');
++    return;
++  }
+   const file = fileFor(req.url);
+   if (!file || !existsSync(file) || !statSync(file).isFile()) {
+     res.writeHead(404).end('not found');
+@@ -30,7 +38,7 @@ createServer((req, res) => {
      'Cache-Control': 'no-store',
    });
    createReadStream(file).pipe(res);
