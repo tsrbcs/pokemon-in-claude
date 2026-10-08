@@ -74,7 +74,7 @@ Danach den Ordner `%LOCALAPPDATA%\pokemon-in-claude` löschen. Die per winget in
 
 ## Rechtliches
 
-Inoffizielles Fan-Projekt, nicht von Nintendo, Game Freak oder The Pokémon Company. Pokémon und Pokémon Emerald sind Marken ihrer Inhaber. Dieses Repository enthält keinen Nintendo-Inhalt. Das Einrichten lädt das öffentliche Projekt `tripplyons/pokeemerald-wasm` auf deinen Rechner, das auf der Dekompilation `pret/pokeemerald` beruht. Nutze es für private, nicht kommerzielle Zwecke und beachte die Lizenzen und Rechte der Projekte.
+Inoffizielles Fan-Projekt, nicht von Nintendo, Game Freak oder The Pokémon Company. Pokémon und Pokémon Emerald sind Marken ihrer Inhaber. Dieses Repository enthält keinen Nintendo-Inhalt. Das Einrichten lädt das öffentliche Projekt `tripplyons/pokeemerald-wasm` auf deinen Rechner, das auf der Dekompilation `pret/pokeemerald` beruht. Nutze es für private, nicht kommerzielle Zwecke und beachte die Lizenzen und Rechte der Projekte. Die MIT-Lizenz in `LICENSE` gilt nur für die Skripte, die Konfiguration und die Dokumentation dieses Repositories, nicht für Pokémon-Inhalte und nicht für das heruntergeladene Projekt `tripplyons/pokeemerald-wasm`.
 
 ## Fehlersuche
 
