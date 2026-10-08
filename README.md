@@ -17,7 +17,7 @@ Läuft ohne Emulator: Das Spiel ist der Quellcode der Pokémon-Emerald-Dekompila
    ```
    Claude zeigt dir, was noch fehlt und wie groß es ist, und fragt **einmal** um Erlaubnis. Danach richtet es alles selbst ein und öffnet das Spiel im Claude-Browser.
 
-Der Ping ist ab der Installation aktiv, du musst dafür nichts einstellen.
+Der Ping ist standardmäßig aus. Zum Einschalten siehe „Ping einschalten“.
 
 ## Voraussetzungen
 
@@ -64,9 +64,9 @@ Lege die Datei `%LOCALAPPDATA%\pokemon-in-claude\nudges.txt` an, eine Zeile pro 
 2 Min: Eine Rechnung schreiben.
 ```
 
-## Ping ausschalten
+## Ping einschalten
 
-Lege eine leere Datei `%LOCALAPPDATA%\pokemon-in-claude\no-ping` an. Solange sie existiert, gibt es keinen Ton, keine Meldung und kein Blinken. Löschst du die Datei, ist der Ping wieder da. Alternativ das Plugin abschalten: `claude plugin disable pokemon-in-claude@pokemon-in-claude`.
+Lege eine leere Datei `%LOCALAPPDATA%\pokemon-in-claude\ping-on` an. Solange sie existiert, gibt es Ton, Meldung und Blinken. Löschst du die Datei, ist der Ping wieder aus. Alternativ das Plugin abschalten: `claude plugin disable pokemon-in-claude@pokemon-in-claude`.
 
 ## Deinstallieren
 
