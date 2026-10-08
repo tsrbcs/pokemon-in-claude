@@ -3,7 +3,7 @@
 #   powershell -File setup.ps1            -> Plan/Status (Exit 0, Zustand in der Zeile SETUP_STATE=READY oder PENDING)
 #   powershell -File setup.ps1 -Consent   -> fehlende Teile parallel laden, entpacken, bauen (bei Abbruch einfach erneut starten)
 #   powershell -File setup.ps1 -Consent -Rebuild   -> Spiel neu bauen
-# Ausgabe-Zeilen fuer Programme: SETUP_STATE=<READY|PENDING>, PENDING_MB=<n>, ADMIN_PROMPT=False, SETUP_OK, FEHLER:
+# Ausgabe-Zeilen fuer Programme: SETUP_STATE=<READY|PENDING>, PENDING_MB=<n>, SETUP_OK, FEHLER:
 param([switch]$Consent, [switch]$Rebuild)
 
 $ErrorActionPreference = 'Continue'
@@ -315,7 +315,6 @@ foreach ($s in $steps) {
 }
 $pendingMB = 0; foreach ($s in $pending) { $pendingMB += [int]$s.MB }
 Write-Host "PENDING_MB=$pendingMB"
-Write-Host 'ADMIN_PROMPT=False'
 
 if (-not $Consent) {
   if ($pending.Count -eq 0) { Write-Host 'SETUP_STATE=READY'; Write-Host 'SETUP_OK: Alles vorhanden.'; exit 0 }

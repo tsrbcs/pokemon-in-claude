@@ -61,8 +61,8 @@ Der Spielstand liegt im Browser unter `127.0.0.1:8000`. Sichere ihn mit „Downl
 Lege die Datei `%LOCALAPPDATA%\pokemon-in-claude\nudges.txt` an, eine Zeile pro Tipp, zum Beispiel:
 
 ```
-2 Min: Titel für das nächste Video aufschreiben.
-2 Min: Eine Rechnung schreiben.
+2 Min: Den nächsten Schritt für mein Projekt aufschreiben.
+2 Min: Eine offene Mail beantworten.
 ```
 
 ## Ping einschalten
@@ -73,6 +73,7 @@ Lege eine leere Datei `%LOCALAPPDATA%\pokemon-in-claude\ping-on` an. Solange sie
 
 ```
 /plugin uninstall pokemon-in-claude@pokemon-in-claude
+/plugin marketplace remove pokemon-in-claude
 ```
 
 Danach den Ordner `%LOCALAPPDATA%\pokemon-in-claude` löschen. Mehr gibt es nicht zu entfernen, denn außerhalb dieses Ordners wurde nichts installiert.
