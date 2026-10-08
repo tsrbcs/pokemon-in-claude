@@ -1,0 +1,69 @@
+diff --git a/tools/generate_wasm_assets.py b/tools/generate_wasm_assets.py
+index 30954e7..bdcfb87 100644
+--- a/tools/generate_wasm_assets.py
++++ b/tools/generate_wasm_assets.py
+@@ -39,7 +39,9 @@ def ensure_make_target(target):
+     # A parent `make -j` advertises its jobserver pipe through MAKEFLAGS, but
+     # Python closes those descriptors. The child must not try to use them.
+     env = {name: value for name, value in os.environ.items() if name not in ('MAKEFLAGS', 'MFLAGS')}
+-    subprocess.run(['make', 'NODEP=1', 'SETUP_PREREQS=1', target], check=True, env=env)
++    # Windows: SETUP_PREREQS=1 on the command line is inherited by the nested `$(MAKE) generated`
++    # calls in the Makefile, which then recurse forever. The outer make already ran the setup.
++    subprocess.run(['make', 'NODEP=1', 'SETUP_PREREQS=0', target], check=True, env=env)
+ 
+ 
+ def generate_incgfx(source, extension, args):
+diff --git a/tools/wasm_asm_data.py b/tools/wasm_asm_data.py
+index b7b735d..3d4da24 100644
+--- a/tools/wasm_asm_data.py
++++ b/tools/wasm_asm_data.py
+@@ -308,10 +308,15 @@ def preprocess(source: Path) -> str:
+         text=True,
+         capture_output=True,
+     )
++    # Windows: clang -E escapes backslashes in line markers ("data\\x.s"), which preproc rejects.
++    cpp_out = "\n".join(
++        line.replace("\\\\", "/") if line.startswith("# ") else line
++        for line in cpp.stdout.split("\n")
++    )
+     second = subprocess.run(
+         [str(ROOT / "tools/preproc/preproc"), "-ie", str(source), "charmap.txt"],
+         cwd=ROOT,
+-        input=cpp.stdout,
++        input=cpp_out,
+         check=True,
+         text=True,
+         capture_output=True,
+diff --git a/web/index.html b/web/index.html
+index 94df239..ff88890 100644
+--- a/web/index.html
++++ b/web/index.html
+@@ -5,15 +5,6 @@
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+   <title>pokeemerald-wasm</title>
+   <link rel="stylesheet" href="/web/style.css" />
+-  <!-- Google tag (gtag.js) -->
+-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-25RQ7HFHXS"></script>
+-  <script>
+-    window.dataLayer = window.dataLayer || [];
+-    function gtag(){dataLayer.push(arguments);}
+-    gtag('js', new Date());
+-
+-    gtag('config', 'G-25RQ7HFHXS');
+-  </script>
+ </head>
+ <body>
+   <main class="shell" aria-label="pokeemerald-wasm emulator">
+diff --git a/web/server.mjs b/web/server.mjs
+index 32bcf02..ff06a0c 100644
+--- a/web/server.mjs
++++ b/web/server.mjs
+@@ -30,7 +30,7 @@ createServer((req, res) => {
+     'Cache-Control': 'no-store',
+   });
+   createReadStream(file).pipe(res);
+-}).listen(requestedPort, function () {
++}).listen(requestedPort, '127.0.0.1', function () {
+   const { port } = this.address();
+   console.log(`pokeemerald wasm server: http://localhost:${port}`);
+ });

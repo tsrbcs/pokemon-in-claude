@@ -1,0 +1,16 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
+  "name": "pokemon-in-claude",
+  "description": "Pokémon Emerald im Claude-Browser spielen, während Claude arbeitet.",
+  "owner": {
+    "name": "tsrbcs"
+  },
+  "plugins": [
+    {
+      "name": "pokemon-in-claude",
+      "description": "Richtet Pokémon Emerald (Browser-Version) mit einem Befehl ein und holt dich per Ping zurück, wenn Claude dich braucht.",
+      "source": "./",
+      "category": "entertainment"
+    }
+  ]
+}
