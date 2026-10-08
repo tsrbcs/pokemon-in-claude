@@ -64,6 +64,10 @@ Lege die Datei `%LOCALAPPDATA%\pokemon-in-claude\nudges.txt` an, eine Zeile pro 
 2 Min: Eine Rechnung schreiben.
 ```
 
+## Ping ausschalten
+
+Lege eine leere Datei `%LOCALAPPDATA%\pokemon-in-claude\no-ping` an. Solange sie existiert, gibt es keinen Ton, keine Meldung und kein Blinken. Löschst du die Datei, ist der Ping wieder da. Alternativ das Plugin abschalten: `claude plugin disable pokemon-in-claude@pokemon-in-claude`.
+
 ## Deinstallieren
 
 ```
