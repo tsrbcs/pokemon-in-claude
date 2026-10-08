@@ -1,9 +1,9 @@
 # setup.ps1 - richtet "Pokemon im Claude-Browser" ein (Windows 10/11).
 # Ohne -Consent wird NICHTS heruntergeladen oder installiert: es wird nur der Plan ausgegeben.
-#   powershell -File setup.ps1            -> Plan/Status (Exit 0 = alles da, 10 = es fehlt etwas)
+#   powershell -File setup.ps1            -> Plan/Status (Exit 0, Zustand in der Zeile SETUP_STATE=READY oder PENDING)
 #   powershell -File setup.ps1 -Consent   -> fehlende Teile laden, installieren, bauen
 #   powershell -File setup.ps1 -Consent -Rebuild   -> Spiel neu bauen
-# Ausgabe-Zeilen fuer Programme: PENDING_MB=<n>, ADMIN_PROMPT=<True|False>, SETUP_OK, FEHLER:
+# Ausgabe-Zeilen fuer Programme: SETUP_STATE=<READY|PENDING>, PENDING_MB=<n>, ADMIN_PROMPT=<True|False>, SETUP_OK, FEHLER:
 param([switch]$Consent, [switch]$Rebuild)
 
 $ErrorActionPreference = 'Continue'
@@ -198,9 +198,10 @@ Write-Host "PENDING_MB=$pendingMB"
 Write-Host "ADMIN_PROMPT=$adminNeeded"
 
 if (-not $Consent) {
-  if ($pending.Count -eq 0) { Write-Host 'SETUP_OK: Alles vorhanden.'; exit 0 }
+  if ($pending.Count -eq 0) { Write-Host 'SETUP_STATE=READY'; Write-Host 'SETUP_OK: Alles vorhanden.'; exit 0 }
+  Write-Host 'SETUP_STATE=PENDING'
   Write-Host 'Nur Plan. Zum Ausfuehren: setup.ps1 -Consent'
-  exit 10
+  exit 0
 }
 
 # ---------- Ausfuehren ----------

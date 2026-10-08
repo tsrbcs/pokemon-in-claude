@@ -13,7 +13,7 @@ Windows 10/11 mit Git for Windows. Die Skripte liegen im Plugin-Ordner: zwei Ebe
 
 1. **Plan holen (lädt nichts):**
    `powershell -NoProfile -ExecutionPolicy Bypass -File "<Plugin-Ordner>\scripts\setup.ps1"`
-   Lies die Zeilen `PLAN:`, `PENDING_MB=` und `ADMIN_PROMPT=`. Exit 0 heißt: alles da, weiter bei Schritt 4. Exit 1 mit `GIT_MISSING` oder `UNSUPPORTED`: dem Nutzer den Grund in einem Satz sagen und stoppen.
+   Lies die Zeilen `PLAN:`, `SETUP_STATE=`, `PENDING_MB=` und `ADMIN_PROMPT=`. Der Exit-Code ist im Plan-Modus immer 0: `SETUP_STATE=READY` heißt alles da, weiter bei Schritt 4. `SETUP_STATE=PENDING` heißt es fehlt etwas, weiter bei Schritt 2 (das ist kein Fehler). Exit 1 mit `GIT_MISSING` oder `UNSUPPORTED`: dem Nutzer den Grund in einem Satz sagen und stoppen.
 
 2. **Einmal um Erlaubnis fragen**, nur wenn etwas fehlt. Zeige die offenen Zeilen des Plans als kurze Liste mit Größen, nenne die Gesamtgröße (`PENDING_MB`) und die Dauer (ca. 10 bis 25 Minuten, je nach Leitung). Ist `ADMIN_PROMPT=True`, sage dazu: „Gleich erscheint eine Windows-Abfrage (UAC). Bitte auf Ja klicken.“ Ohne ausdrückliches Ja nichts herunterladen oder installieren. Das Ja des Nutzers gilt nur für diese Liste.
 
