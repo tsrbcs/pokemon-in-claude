@@ -54,7 +54,7 @@ Alles landet unter `%LOCALAPPDATA%\pokemon-in-claude\`. Es wird nichts außerhal
 
 Der Browser-Bereich muss **sichtbar** sein, sonst bremst der Browser das Spiel auf etwa 6 Bilder pro Sekunde.
 
-Tasten: Pfeile, `Z` = A, `X` = B, `Enter` = Start, `Shift` = Select.
+Tasten: `W` `A` `S` `D` = Steuerkreuz, `Leertaste` = A, `Q` = B, `E` = Start, `Shift` = Select. Die alten Tasten gehen weiter: Pfeile, `Z` = A, `X` = B, `Enter` = Start.
 
 Der Spielstand liegt im Browser unter `127.0.0.1:8000`. Sichere ihn mit „Download .sav“, ein Browserwechsel oder ein gelöschter Browserspeicher löscht ihn sonst.
 

@@ -34,8 +34,37 @@ index b7b735d..3d4da24 100644
          check=True,
          text=True,
          capture_output=True,
+diff --git a/web/app.js b/web/app.js
+index ad1b7a6..7717547 100644
+--- a/web/app.js
++++ b/web/app.js
+@@ -75,9 +75,11 @@ const buttons = {
+ };
+ 
+ const keyMap = new Map([
++  // WASD = Steuerkreuz, Leertaste = A, Q = B, E = Start, Shift = Select (alte Tasten bleiben zusaetzlich)
++  ['KeyW', 'up'], ['KeyA', 'left'], ['KeyS', 'down'], ['KeyD', 'right'],
++  ['Space', 'a'], ['KeyQ', 'b'], ['KeyE', 'start'],
+   ['KeyZ', 'a'], ['KeyX', 'b'], ['ShiftLeft', 'select'], ['ShiftRight', 'select'], ['Enter', 'start'],
+   ['ArrowRight', 'right'], ['ArrowLeft', 'left'], ['ArrowUp', 'up'], ['ArrowDown', 'down'],
+-  ['KeyS', 'r'], ['KeyA', 'l'],
+ ]);
+ 
+ const canvas = document.querySelector('#screen');
+@@ -817,6 +819,11 @@ window.addEventListener('keyup', (event) => {
+   setPressed(name, false);
+ });
+ 
++// Verliert die Seite den Fokus (z. B. Klick ins Chat-Feld), werden alle gehaltenen Tasten losgelassen
++window.addEventListener('blur', () => {
++  [...pressed].forEach((name) => setPressed(name, false));
++});
++
+ window.addEventListener('beforeunload', () => saveFlashIfChanged(true));
+ window.addEventListener('pagehide', () => saveFlashIfChanged(true));
+ window.addEventListener('visibilitychange', () => {
 diff --git a/web/index.html b/web/index.html
-index 94df239..ff88890 100644
+index 94df239..3f42cdd 100644
 --- a/web/index.html
 +++ b/web/index.html
 @@ -5,15 +5,6 @@
@@ -54,6 +83,15 @@ index 94df239..ff88890 100644
  </head>
  <body>
    <main class="shell" aria-label="pokeemerald-wasm emulator">
+@@ -66,7 +57,7 @@
+       </div>
+     </section>
+ 
+-    <p class="keys">Keyboard: arrows, Z=A, X=B, Enter=Start, Shift=Select.</p>
++    <p class="keys">Keyboard: WASD or arrows, Space or Z = A, Q or X = B, E or Enter = Start, Shift = Select.</p>
+   </main>
+   <script type="module" src="/web/app.js"></script>
+ </body>
 diff --git a/web/server.mjs b/web/server.mjs
 index 32bcf02..fcf357e 100644
 --- a/web/server.mjs
