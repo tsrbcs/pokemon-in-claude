@@ -1,4 +1,6 @@
 {
+  "description": "Ping-Hooks (ping.ps1) und Mod (register.ts)",
+  "modules": ["./register.ts"],
   "hooks": {
     "Notification": [
       {
