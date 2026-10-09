@@ -35,7 +35,7 @@ Nichts, bevor du zustimmst. Das Plugin selbst enthält keine Nintendo-Dateien un
 | Zig 0.17.0 | ca. 96 MB | Compiler (`clang`) und Linker (`wasm-ld`) für WebAssembly |
 | WinLibs MinGW (7z) | ca. 105 MB | `gcc`, `g++`, `make`, `cmake` für die Hilfswerkzeuge |
 | uv | ca. 17 MB | startet die Python-Skripte, lädt beim ersten Lauf ca. 30 MB Python |
-| Node.js (portabel), falls nicht vorhanden | ca. 36 MB | kleiner lokaler Server (nur `127.0.0.1`) |
+| Node.js (portabel), falls keins ab Version 18 vorhanden ist | ca. 36 MB | kleiner lokaler Server (nur `127.0.0.1`) |
 | zlib und libpng (Quellcode) | ca. 3 MB | mit festen SHA256-Prüfsummen, wird lokal gebaut |
 | Spiel-Quellcode `tripplyons/pokeemerald-wasm` | ca. 55 MB | fester Stand, Commit `fd83f5b6` |
 

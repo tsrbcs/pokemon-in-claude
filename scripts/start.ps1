@@ -11,7 +11,8 @@ $url   = "http://127.0.0.1:$Port/"
 if (-not (Test-Path $wasm)) { Write-Host "NOT_BUILT: Noch nicht eingerichtet. Zuerst /pokemon bzw. setup.ps1 -Consent ausfuehren."; exit 1 }
 $ownNode = Join-Path $home_ 'node\node.exe'
 $node = if (Test-Path $ownNode) { $ownNode } else { (Get-Command node -ErrorAction SilentlyContinue | Select-Object -First 1).Source }
-if (-not $node) { Write-Host "NODE_MISSING: Node.js fehlt. Bitte /pokemon ausfuehren, das richtet es ein."; exit 4 }
+if ($node -and $node -ne $ownNode) { $v = (& $node --version 2>$null | Out-String).Trim(); if (-not ($v -match '^v(\d+)\.' -and [int]$Matches[1] -ge 18)) { $node = $null } }
+if (-not $node) { Write-Host "NODE_MISSING: Node.js ab Version 18 fehlt. Bitte /pokemon ausfuehren, das richtet es ein."; exit 4 }
 
 $c = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($c) {

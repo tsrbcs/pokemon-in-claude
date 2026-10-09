@@ -48,10 +48,10 @@ $assets = @{
             Url = 'https://zlib.net/zlib-1.3.2.tar.gz'
             Alt = 'https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.gz'
             Sha = 'bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16' }
-  png  = @{ File = 'libpng-1.6.59.tar.xz'; MB = 1; Dest = $null; Dir = 'libpng-1.6.59'
-            Url = 'https://sourceforge.net/projects/libpng/files/libpng16/1.6.59/libpng-1.6.59.tar.xz/download'
-            Sha = 'd80dd2a38a37f803cb9b6ac7b14bd6e74ddc3b654780a8380bdf93523fdb4389' }
 }
+# libpng kommt per git von GitHub (fester Commit von Tag v1.6.59), nicht als Archiv
+$pngUrl = 'https://github.com/pnggroup/libpng.git'
+$pngSha = 'cd952f49f95bb27154ae77dbb103032d95f6e580'
 
 # ---------- Hilfen ----------
 function Q([string]$s) { return '"' + $s + '"' }
@@ -85,7 +85,9 @@ function Find-Git {
   }
   return $null
 }
-function Node-Exe { $own = Join-Path $nodeDir 'node.exe'; if (Test-Path $own) { return $own }; $c = Get-Command node.exe -ErrorAction SilentlyContinue | Select-Object -First 1; if ($c) { return $c.Source }; return $null }
+# Ein vorhandenes Node zaehlt nur ab Version 18 (aeltere koennen den Spielserver nicht starten); sonst wird ein eigenes geladen.
+function Node-Ok([string]$exe) { try { $v = (& $exe --version 2>$null | Out-String).Trim(); return ($v -match '^v(\d+)\.' -and [int]$Matches[1] -ge 18) } catch { return $false } }
+function Node-Exe { $own = Join-Path $nodeDir 'node.exe'; if (Test-Path $own) { return $own }; $c = Get-Command node.exe -ErrorAction SilentlyContinue | Select-Object -First 1; if ($c -and (Node-Ok $c.Source)) { return $c.Source }; return $null }
 function Uv-Exe   { $own = Join-Path $uvDir 'uv.exe';     if (Test-Path $own) { return $own }; $c = Get-Command uv.exe   -ErrorAction SilentlyContinue | Select-Object -First 1; if ($c) { return $c.Source }; return $null }
 function Tool-Done($id) {
   $a = $assets[$id]
@@ -146,7 +148,7 @@ function Fetch-All([string[]]$ids, [bool]$needSource) {
     foreach ($id in $ids) {
       $a = $assets[$id]; $f = Join-Path $dl $a.File
       if ((Test-Path $f) -and ((Sha $f) -eq $a.Sha)) { continue }
-      $args_ = '--proto =https --proto-redir =https --max-redirs 5 -L --fail --silent --show-error --retry 3 --retry-delay 2 -o ' + (Q $f) + ' ' + (Q $a.Url)
+      $args_ = '--proto =https --proto-redir =https --max-redirs 5 -L --fail --silent --show-error --retry 5 --retry-all-errors --retry-delay 2 -o ' + (Q $f) + ' ' + (Q $a.Url)
       $p = Start-Process $curl -ArgumentList $args_ -PassThru -WindowStyle Hidden; $null = $p.Handle
       $jobs += [pscustomobject]@{ Id = $id; A = $a; File = $f; P = $p }
     }
@@ -175,7 +177,7 @@ function Fetch-All([string[]]$ids, [bool]$needSource) {
     foreach ($j in $jobs) {
       if ($j.P.ExitCode -ne 0 -and $j.A.Alt) {   # zweite Quelle versuchen
         Write-Host "  $($j.A.File): erste Quelle fehlgeschlagen, versuche zweite"
-        $p2 = Start-Process $curl -ArgumentList ('--proto =https --proto-redir =https --max-redirs 5 -L --fail --silent --show-error --retry 3 -o ' + (Q $j.File) + ' ' + (Q $j.A.Alt)) -PassThru -WindowStyle Hidden -Wait
+        $p2 = Start-Process $curl -ArgumentList ('--proto =https --proto-redir =https --max-redirs 5 -L --fail --silent --show-error --retry 5 --retry-all-errors -o ' + (Q $j.File) + ' ' + (Q $j.A.Alt)) -PassThru -WindowStyle Hidden -Wait
         $j.P = $p2; $null = $p2.Handle
       }
       if ($j.P.ExitCode -ne 0) { throw "Download fehlgeschlagen: $($j.A.File) (curl Exit $($j.P.ExitCode))" }
@@ -234,13 +236,26 @@ function Build-Shims {
   (Sha $shimSrc) | Set-Content $shimStamp
 }
 
+# libpng-Quellcode per git auf den festen Commit holen (git prueft den Inhalt ueber die Commit-Nummer)
+function Fetch-Png([string]$dir) {
+  Remove-Tree $dir
+  New-Item -ItemType Directory -Force $dir | Out-Null
+  Run 'libpng git init'     { git init -q $dir }
+  Run 'libpng git remote'   { git -C $dir remote add origin $pngUrl }
+  Run 'libpng git fetch'    { git -C $dir fetch -q --depth 1 origin $pngSha }
+  Run 'libpng git checkout' { git -C $dir -c advice.detachedHead=false checkout -q --detach -f FETCH_HEAD }
+  $head = (git -C $dir rev-parse HEAD | Out-String).Trim()
+  if ($head -ne $pngSha) { throw "Falscher libpng-Stand: $head" }
+}
+
 # 4) zlib und libpng aus dem Quellcode bauen (fuer das Werkzeug gbagfx)
 function Build-Deps {
   Set-BuildEnv
   New-Item -ItemType Directory -Force $depsDir | Out-Null
   $prefix = $depsDir -replace '\\', '/'
   $zsrc = Join-Path $dl $assets.zlib.Dir; $zbld = Join-Path $dl 'build-zlib'
-  $psrc = Join-Path $dl $assets.png.Dir;  $pbld = Join-Path $dl 'build-libpng'
+  $psrc = Join-Path $dl 'libpng-src';     $pbld = Join-Path $dl 'build-libpng'
+  Fetch-Png $psrc
   Run 'zlib configure'   { cmake -S $zsrc -B $zbld -G 'MinGW Makefiles' -DCMAKE_SH=CMAKE_SH-NOTFOUND -DCMAKE_BUILD_TYPE=Release "-DCMAKE_INSTALL_PREFIX=$prefix" -DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_TESTING=OFF -DCMAKE_C_COMPILER=gcc }
   Run 'zlib build'       { cmake --build $zbld -j 4 }
   Run 'zlib install'     { cmake --install $zbld }
@@ -327,10 +342,13 @@ if (-not $Consent) {
 function Pending([string]$id) { return [bool](@($pending | Where-Object { $_.Id -eq $id }).Count) }
 try {
   New-Item -ItemType Directory -Force $home_ | Out-Null
+  # Sperre gegen zwei gleichzeitige Installationen (Windows gibt sie frei, sobald dieser Prozess endet, auch nach einem Absturz)
+  try { $script:lockStream = [IO.File]::Open((Join-Path $home_ 'setup.lock'), 'OpenOrCreate', 'ReadWrite', 'None') }
+  catch { Write-Host 'FEHLER: Eine andere Installation laeuft gerade (setup.lock). Bitte warten, bis sie fertig ist, und dann erneut starten.'; exit 20 }
   if (-not (Test-Path -LiteralPath $homeMarker)) { 'Ordner gehoert dem Plugin pokemon-in-claude. Loeschen ist sicher.' | Set-Content -LiteralPath $homeMarker }
   $dlIds = @(); foreach ($id in 'zig', 'gcc', 'uv', 'node') { if (Pending $id) { $dlIds += $id } }
   $toolIds = @($dlIds)
-  if (Pending 'deps') { $dlIds += 'zlib'; $dlIds += 'png' }
+  if (Pending 'deps') { $dlIds += 'zlib' }
   $needSource = Pending 'src'
   if ($dlIds.Count -gt 0 -or $needSource) { Write-Host '>> Alles Fehlende gleichzeitig laden'; Fetch-All $dlIds $needSource }
   if ($dlIds.Count -gt 0) { Write-Host '>> Entpacken'; Extract-All $dlIds }
