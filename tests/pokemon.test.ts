@@ -145,3 +145,28 @@ test('Ohne laufenden Zug zeichnet die Leiste nichts Eigenes', async ($, on) => {
   expect(await ui.find({ type: 'Text', text: /Claude arbeitet/ })).toBeUndefined()
   await ui.unmount()
 })
+
+const done = (stdout: string, exitCode = 0) => ({ exitCode, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false })
+
+test('/pokemon ohne "ja" zeigt den Plan und laedt nichts', async ($, on) => {
+  const calls: string[][] = []
+  on('process.run', (_$, e) => {
+    calls.push([...e.argv])
+    return { value: done('PLAN:\n  [ ] Spiel-Quellcode\nPENDING_MB=55\nSETUP_STATE=PENDING\n') }
+  })
+
+  const answer = await $.command.run({ command: 'pokemon', args: '' })
+  expect(answer.text).toContain('/pokemon ja')
+  expect(answer.text).toContain('55 MB')
+  expect(calls.length).toBe(1)
+  expect(calls[0].includes('-Consent')).toBe(false)
+})
+
+test('/pokemon startet den Spielserver, wenn alles eingerichtet ist', async ($, on) => {
+  on('process.run', (_$, e) =>
+    ({ value: e.argv.some(a => a.endsWith('setup.ps1')) ? done('SETUP_STATE=READY\nSETUP_OK: Alles vorhanden.\n') : done('Server gestartet.\nURL: http://127.0.0.1:8000/\n') }),
+  )
+
+  const answer = await $.command.run({ command: 'pokemon', args: '' })
+  expect(answer.text).toContain('Spielserver laeuft: http://127.0.0.1:8000/')
+})

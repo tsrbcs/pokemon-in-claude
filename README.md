@@ -1,6 +1,8 @@
 # pokemon-in-claude
 
-Spiele **Pokémon Emerald** direkt im Browser-Bereich von Claude, während Claude arbeitet. Sobald Claude fertig ist oder dich braucht, holt dich ein Ping zurück: Ton, blinkende Taskleiste und eine Meldung mit einem kleinen Tipp.
+Spiele **Pokémon Emerald** direkt im Browser-Bereich von Claude, während Claude arbeitet. Sobald Claude fertig ist, holt dich auf Wunsch eine Meldung zurück.
+
+Das Ganze ist ein reiner **Mod** (ab Claude Code 2.1.287): kein Skill, keine Befehls-Hooks, nur `hooks/register.tsx`.
 
 Läuft ohne Emulator: Das Spiel ist der Quellcode der Pokémon-Emerald-Dekompilation, übersetzt zu WebAssembly ([tripplyons/pokeemerald-wasm](https://github.com/tripplyons/pokeemerald-wasm)). Du brauchst keine ROM.
 
@@ -13,11 +15,11 @@ Läuft ohne Emulator: Das Spiel ist der Quellcode der Pokémon-Emerald-Dekompila
    ```
 2. Dann einmal:
    ```
-   /pokemon-in-claude:pokemon
+   /pokemon
    ```
-   Claude zeigt dir, was noch fehlt und wie groß es ist, und fragt **einmal** um Erlaubnis. Danach richtet es alles selbst ein und öffnet das Spiel im Claude-Browser.
+   Der Mod zeigt dir, was noch fehlt und wie groß es ist. Mit `/pokemon ja` erlaubst du die Einrichtung (**einmal**). Danach richtet er alles selbst ein und startet den Spielserver. Öffne dann `http://127.0.0.1:8000/` im Browser-Bereich von Claude.
 
-Der Ping ist standardmäßig aus. Zum Einschalten siehe „Ping einschalten“.
+Die Meldung am Zugende ist standardmäßig aus. Zum Einschalten siehe „Meldung einschalten“.
 
 ## Voraussetzungen
 
@@ -56,29 +58,21 @@ Tasten: Pfeile, `Z` = A, `X` = B, `Enter` = Start, `Shift` = Select.
 
 Der Spielstand liegt im Browser unter `127.0.0.1:8000`. Sichere ihn mit „Download .sav“, ein Browserwechsel oder ein gelöschter Browserspeicher löscht ihn sonst.
 
-## Eigene Tipps im Ping
+## Meldung einschalten
 
-Lege die Datei `%LOCALAPPDATA%\pokemon-in-claude\nudges.txt` an, eine Zeile pro Tipp, zum Beispiel:
+Tippe `/pokemon-ping on` (ausschalten: `/pokemon-ping off`). Solange sie an ist, zeigt Claude Code am Zugende eine Meldung. Während Claude arbeitet, zeigt die Leiste über dem Eingabefeld außerdem den Schalter „Ping: an/aus“. Der Schalter ist die Textdatei `%LOCALAPPDATA%\pokemon-in-claude\ping` mit dem Inhalt `on` oder `off`.
 
-```
-2 Min: Den nächsten Schritt für mein Projekt aufschreiben.
-2 Min: Eine offene Mail beantworten.
-```
+## Was der Mod tut
 
-## Ping einschalten
+Der Mod (`hooks/register.tsx`) läuft in Claude Code selbst, mit deinen Rechten, so wie jedes Plugin mit Code. Du siehst vorher, was er tut: `claude plugin validate <Plugin-Ordner>` listet seine Hooks und Aufrufe. Er startet nur die Skripte aus `scripts/` (Einrichten und Spielserver), liest und schreibt die Datei `ping` im Plugin-Ordner, liest `LOCALAPPDATA` und `POKEMON_IN_CLAUDE_HOME` und fragt `127.0.0.1:8000` an.
 
-Tippe `/pokemon-ping on` (ausschalten: `/pokemon-ping off`). Solange er an ist, gibt es Ton, Meldung und Blinken. Während Claude arbeitet, zeigt die Leiste über dem Eingabefeld außerdem den Schalter „Ping: an/aus“. Der Schalter ist die Textdatei `%LOCALAPPDATA%\pokemon-in-claude\ping` mit dem Inhalt `on` oder `off`. Alternativ das Plugin abschalten: `claude plugin disable pokemon-in-claude@pokemon-in-claude`.
-
-## Mod (ab Claude Code 2.1.287)
-
-Das Plugin enthält einen Mod (`hooks/register.tsx`). Er läuft in Claude Code selbst, mit deinen Rechten, so wie jedes Plugin mit Code. Du siehst vorher, was er tut: `claude plugin validate <Plugin-Ordner>` listet seine Hooks und Aufrufe (er liest und schreibt nur die Datei `ping` im Plugin-Ordner, liest `LOCALAPPDATA` und `POKEMON_IN_CLAUDE_HOME` und fragt `127.0.0.1:8000` an).
-
+- **`/pokemon`** zeigt den Plan; mit `/pokemon ja` richtet er das Spiel ein und startet den Spielserver.
 - **Leiste über dem Eingabefeld:** Solange Claude arbeitet, zeigt sie die Laufzeit, ob der Spielserver bereit ist, und den Schalter „Ping: an/aus“.
 - **`/pokemon-status`** zeigt, ob der Spielserver läuft.
-- **`/pokemon-ping on|off`** schaltet den Ping ein oder aus.
-- **Meldung am Zugende:** Bei eingeschaltetem Ping zeigt Claude Code zusätzlich eine Meldung, wenn Claude fertig ist.
+- **`/pokemon-ping on|off`** schaltet die Meldung ein oder aus.
+- **Meldung am Zugende:** Bei eingeschaltetem Ping zeigt Claude Code eine Meldung, wenn Claude fertig ist.
 
-Ton, blinkende Taskleiste und Windows-Meldung kommen weiter von `ping.ps1`, denn die Mod-Schnittstelle spielt unter Windows keinen Ton ab. Tests: `claude plugin test` im Plugin-Ordner.
+Ton und blinkende Taskleiste gibt es nicht mehr. Tests: `claude plugin test` im Plugin-Ordner.
 
 ## Deinstallieren
 
@@ -96,5 +90,5 @@ Inoffizielles Fan-Projekt, nicht von Nintendo, Game Freak oder The Pokémon Comp
 ## Fehlersuche
 
 - Logs: `%LOCALAPPDATA%\pokemon-in-claude\logs\` (`setup.log`, `build.log`, `server.err.log`).
-- Kein Ping: Prüfe, ob in `%TEMP%` die Datei `pokemon-ping.last` entsteht, und starte Claude einmal neu, damit der Hook geladen wird.
+- Keine Antwort auf `/pokemon`: Der Mod wird erst nach `/reload-plugins` oder einem Neustart geladen.
 - Port 8000 belegt: Beende das andere Programm, der Port ist fest, damit dein Spielstand erhalten bleibt.

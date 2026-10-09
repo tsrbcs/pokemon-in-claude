@@ -1,30 +1,5 @@
 {
-  "description": "Ping-Hooks (ping.ps1) und Mod (register.tsx)",
-  "modules": ["./register.tsx"],
-  "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/scripts/ping.ps1\" Notification || true",
-            "timeout": 15,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/scripts/ping.ps1\" Stop || true",
-            "timeout": 15,
-            "async": true
-          }
-        ]
-      }
-    ]
-  }
+  "description": "Mod (register.tsx)",
+  "hooks": {},
+  "modules": ["./register.tsx"]
 }

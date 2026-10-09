@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "pokemon-in-claude",
-      "description": "Richtet Pokémon Emerald (Browser-Version) mit einem Befehl ein und holt dich per Ping zurück, wenn Claude dich braucht.",
+      "description": "Mod: richtet Pokémon Emerald (Browser-Version) mit /pokemon ein und zeigt eine Leiste, solange Claude arbeitet.",
       "source": "./",
       "category": "entertainment"
     }

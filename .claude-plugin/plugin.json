@@ -1,6 +1,6 @@
 {
   "name": "pokemon-in-claude",
-  "version": "0.2.0",
-  "description": "Spiele Pokémon Emerald im Claude-Browser, während Claude arbeitet. Ein Ping holt dich zurück, sobald Claude dich braucht.",
+  "version": "0.3.0",
+  "description": "Spiele Pokémon Emerald im Claude-Browser, während Claude arbeitet. Ein reiner Mod mit /pokemon.",
   "keywords": ["pokemon", "game", "browser", "windows", "hooks", "adhd"]
 }

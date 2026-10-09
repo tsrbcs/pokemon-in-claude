@@ -4,7 +4,8 @@ import type { EngineInterface, Register } from 'claude-code'
 // (Laufzeit, ob der Spielserver bereit ist, Schalter fuer den Ping) und bietet zwei Befehle:
 //   /pokemon-status        laeuft der Spielserver auf 127.0.0.1:8000?
 //   /pokemon-ping on|off   Ping ein- oder ausschalten
-// Ton, Taskleiste und Windows-Meldung kommen weiter von scripts/ping.ps1 (der Mod spielt unter Windows keinen Ton).
+//   /pokemon               Spiel einrichten (nach "/pokemon ja") und den Spielserver starten
+// Reiner Mod: kein Skill, keine Befehls-Hooks. Der Ping ist die Meldung (Toast) am Zugende; Ton und Taskleiste gibt es nicht mehr.
 // Der Ping-Schalter ist die Datei "ping" im Plugin-Ordner des Nutzers (Inhalt "on" oder "off").
 
 const PORT = 8000
@@ -37,6 +38,47 @@ async function isServerUp($: Api): Promise<boolean> {
   }
 }
 
+const PS = ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File']
+
+function runScript($: Api, name: string, args: string[] = [], timeoutMs = 120000) {
+  return $.process.run([...PS, $.plugin.root + '\\scripts\\' + name, ...args], { timeoutMs })
+}
+
+let isSetupRunning = false
+
+// Einrichtung im Hintergrund: laedt nur nach ausdruecklichem "/pokemon ja", startet danach den Server
+async function runSetup($: Api): Promise<void> {
+  isSetupRunning = true
+  $.ui.status('Pokemon: richte ein ...')
+  try {
+    const setup = $.process.spawn({ argv: [...PS, $.plugin.root + '\\scripts\\setup.ps1', '-Consent'] })
+    let isOk = false
+    let lastLine = ''
+    for await (const { text } of setup) {
+      if (text.includes('SETUP_OK')) isOk = true
+      const line = text.trim().split(/\r?\n/).pop()
+      if (line) {
+        lastLine = line
+        $.ui.status('Pokemon: ' + line)
+      }
+    }
+    if (!isOk) {
+      $.ui.toast('Pokemon-Einrichtung fehlgeschlagen: ' + lastLine, { timeoutMs: 15000 })
+      return
+    }
+    const start = await runScript($, 'start.ps1')
+    $.ui.toast(
+      start.exitCode === 0
+        ? 'Pokemon bereit: http://127.0.0.1:' + PORT + '/ im Browser-Bereich oeffnen.'
+        : 'Pokemon eingerichtet, Server startet nicht: ' + start.stdout.trim(),
+      { timeoutMs: 15000 },
+    )
+  } finally {
+    isSetupRunning = false
+    $.ui.status(undefined)
+  }
+}
+
 export const register: Register = on => {
   let startedAt = 0
   let isWorking = false
@@ -45,17 +87,44 @@ export const register: Register = on => {
   let tick: { cancel: () => void } | undefined
 
   on('session.start', async ($, e, next) => {
+    await $.command.register({ name: 'pokemon', description: 'Pokemon Emerald einrichten und den Spielserver starten (/pokemon ja = Einrichtung erlauben)' })
     await $.command.register({ name: 'pokemon-status', description: 'Zeigt, ob der Pokemon-Spielserver laeuft' })
     await $.command.register({ name: 'pokemon-ping', description: 'Ping ein- oder ausschalten: /pokemon-ping on oder off' })
     return next(e)
   })
 
+  on('command.run', { command: 'pokemon' }, async ($, e) => {
+    if (isSetupRunning) return { text: 'Die Einrichtung laeuft schon. Stand: /pokemon-status.' }
+    const plan = await runScript($, 'setup.ps1')
+    if (plan.exitCode !== 0) return { text: 'Einrichtung nicht moeglich:\n' + plan.stdout.trim() }
+    if (plan.stdout.includes('SETUP_STATE=PENDING')) {
+      const mb = /PENDING_MB=(\d+)/.exec(plan.stdout)?.[1] ?? '?'
+      if (e.args.trim().toLowerCase() !== 'ja') {
+        return {
+          text:
+            (plan.stdout.split('SETUP_STATE')[0] ?? '').trim() +
+            '\n\nEs fehlt etwas (' + mb + ' MB Download, keine Admin-Rechte). Erlauben mit: /pokemon ja',
+        }
+      }
+      void runSetup($)
+      return { text: 'Einrichtung gestartet (' + mb + ' MB). Fortschritt in der Statuszeile, Ende als Meldung.' }
+    }
+    const start = await runScript($, 'start.ps1')
+    return {
+      text:
+        start.exitCode === 0
+          ? 'Spielserver laeuft: http://127.0.0.1:' + PORT + '/ (im Browser-Bereich oeffnen). Tasten: Pfeile, Z=A, X=B, Enter=Start, Shift=Select. Spielstand sichern: "Download .sav".'
+          : 'Spielserver startet nicht:\n' + start.stdout.trim(),
+    }
+  })
+
   on('command.run', { command: 'pokemon-status' }, async $ => {
+    if (isSetupRunning) return { text: 'Die Einrichtung laeuft noch (siehe Statuszeile).' }
     const isUpNow = await isServerUp($)
     return {
       text: isUpNow
         ? 'Der Spielserver laeuft: http://127.0.0.1:' + PORT + '/ (im Browser-Bereich oeffnen)'
-        : 'Der Spielserver laeuft nicht. Starte ihn mit /pokemon-in-claude:pokemon.',
+        : 'Der Spielserver laeuft nicht. Starte ihn mit /pokemon.',
     }
   })
 
@@ -72,7 +141,7 @@ export const register: Register = on => {
 
   // Beginn eines Zuges von Claude (Zuege von Unteragenten zaehlen nicht)
   on('turn.start', async ($, e, next) => {
-    if (e.agentId === undefined) {
+    if ((e as { agentId?: string }).agentId === undefined) {
       startedAt = await $.clock.now()
       isWorking = true
       isPing = await isPingOn($)
@@ -108,7 +177,7 @@ export const register: Register = on => {
     return (
       <Box>
         <Text>
-          Pokemon-Pause: Claude arbeitet seit {time} · Spielserver {isUp ? 'bereit' : 'aus (/pokemon-in-claude:pokemon)'}{' '}
+          Pokemon-Pause: Claude arbeitet seit {time} · Spielserver {isUp ? 'bereit' : 'aus (/pokemon)'}{' '}
         </Text>
         <Button
           key="ping"
