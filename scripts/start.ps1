@@ -27,7 +27,12 @@ if ($c) {
   # wartender Aufrufer, z. B. ein Werkzeug, das auf das Ende der Ausgabe wartet) und laeuft unabhaengig weiter.
   $line = 'set PORT={0}&& "{1}" web/server.mjs > "{2}" 2> "{3}"' -f $Port, $node, (Join-Path $logs 'server.log'), (Join-Path $logs 'server.err.log')
   $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = ('cmd.exe /d /s /c "{0}"' -f $line); CurrentDirectory = $repo }
-  if ($r.ReturnValue -ne 0) { Write-Host "START_FAILED: WMI-Fehler $($r.ReturnValue)"; exit 3 }
+  if ($r.ReturnValue -ne 0) {
+    # In manchen Umgebungen (z. B. eingeschraenkter Sitzung) startet WMI keinen Prozess (Fehler 8): dann direkt starten.
+    Write-Host "Hinweis: WMI-Start nicht moeglich (Fehler $($r.ReturnValue)), starte direkt."
+    $env:PORT = [string]$Port
+    Start-Process -FilePath $node -ArgumentList 'web/server.mjs' -WorkingDirectory $repo -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logs 'server.log') -RedirectStandardError (Join-Path $logs 'server.err.log') | Out-Null
+  }
   for ($i = 0; $i -lt 20; $i++) {
     Start-Sleep -Milliseconds 500
     if (Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue) { break }

@@ -67,14 +67,16 @@ Lege die Datei `%LOCALAPPDATA%\pokemon-in-claude\nudges.txt` an, eine Zeile pro 
 
 ## Ping einschalten
 
-Lege eine leere Datei `%LOCALAPPDATA%\pokemon-in-claude\ping-on` an. Solange sie existiert, gibt es Ton, Meldung und Blinken. Löschst du die Datei, ist der Ping wieder aus. Alternativ das Plugin abschalten: `claude plugin disable pokemon-in-claude@pokemon-in-claude`.
+Tippe `/pokemon-ping on` (ausschalten: `/pokemon-ping off`). Solange er an ist, gibt es Ton, Meldung und Blinken. Während Claude arbeitet, zeigt die Leiste über dem Eingabefeld außerdem den Schalter „Ping: an/aus“. Der Schalter ist die Textdatei `%LOCALAPPDATA%\pokemon-in-claude\ping` mit dem Inhalt `on` oder `off`. Alternativ das Plugin abschalten: `claude plugin disable pokemon-in-claude@pokemon-in-claude`.
 
 ## Mod (ab Claude Code 2.1.287)
 
-Das Plugin enthält einen kleinen Mod (`hooks/register.ts`). Er läuft in Claude Code selbst, mit deinen Rechten, so wie jedes Plugin mit Code. Du siehst vorher, was er tut: `claude plugin validate <Plugin-Ordner>` listet seine Hooks und Aufrufe (er liest nur `ping-on`, `LOCALAPPDATA` und `POKEMON_IN_CLAUDE_HOME` und fragt `127.0.0.1:8000` an).
+Das Plugin enthält einen Mod (`hooks/register.tsx`). Er läuft in Claude Code selbst, mit deinen Rechten, so wie jedes Plugin mit Code. Du siehst vorher, was er tut: `claude plugin validate <Plugin-Ordner>` listet seine Hooks und Aufrufe (er liest und schreibt nur die Datei `ping` im Plugin-Ordner, liest `LOCALAPPDATA` und `POKEMON_IN_CLAUDE_HOME` und fragt `127.0.0.1:8000` an).
 
+- **Leiste über dem Eingabefeld:** Solange Claude arbeitet, zeigt sie die Laufzeit, ob der Spielserver bereit ist, und den Schalter „Ping: an/aus“.
 - **`/pokemon-status`** zeigt, ob der Spielserver läuft.
-- **Meldung am Zugende:** Bei eingeschaltetem Ping zeigt Claude Code zusätzlich eine Meldung, wenn ein Zug fertig ist.
+- **`/pokemon-ping on|off`** schaltet den Ping ein oder aus.
+- **Meldung am Zugende:** Bei eingeschaltetem Ping zeigt Claude Code zusätzlich eine Meldung, wenn Claude fertig ist.
 
 Ton, blinkende Taskleiste und Windows-Meldung kommen weiter von `ping.ps1`, denn die Mod-Schnittstelle spielt unter Windows keinen Ton ab. Tests: `claude plugin test` im Plugin-Ordner.
 

@@ -2,9 +2,10 @@
 # Ton + Taskleiste blinken + Toast mit einem kleinen Schritt fuer dein Ziel. Beendet immer mit Exit 0.
 # Eigene Tipps: Datei %LOCALAPPDATA%\pokemon-in-claude\nudges.txt (eine Zeile pro Tipp).
 param([string]$EventName = 'Stop', [switch]$Test)
-# STANDARD: AUS. Nur wenn die Datei ping-on im Ordner pokemon-in-claude existiert, gibt es Ton, Toast und Blinken.
+# STANDARD: AUS. Nur wenn die Datei "ping" im Ordner pokemon-in-claude den Inhalt "on" hat, gibt es Ton, Toast und Blinken (Schalter: /pokemon-ping on|off).
 $pokeHome_ = if ($env:POKEMON_IN_CLAUDE_HOME) { $env:POKEMON_IN_CLAUDE_HOME } else { Join-Path $env:LOCALAPPDATA 'pokemon-in-claude' }
-if (-not (Test-Path -LiteralPath (Join-Path $pokeHome_ 'ping-on'))) { exit 0 }
+$pingFile_ = Join-Path $pokeHome_ 'ping'
+if (-not ((Test-Path -LiteralPath $pingFile_) -and ((Get-Content -LiteralPath $pingFile_ -Raw).Trim() -eq 'on'))) { exit 0 }
 
 $ErrorActionPreference = 'SilentlyContinue'
 
