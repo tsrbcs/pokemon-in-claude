@@ -35,17 +35,20 @@ index b7b735d..3d4da24 100644
          text=True,
          capture_output=True,
 diff --git a/web/app.js b/web/app.js
-index ad1b7a6..84c760d 100644
+index ad1b7a6..cca3717 100644
 --- a/web/app.js
 +++ b/web/app.js
-@@ -75,12 +75,21 @@ const buttons = {
+@@ -75,12 +75,23 @@ const buttons = {
  };
  
  const keyMap = new Map([
-+  // WASD = Steuerkreuz, Leertaste = A, Q = B, E = Start, Shift = Select (alte Tasten bleiben zusaetzlich)
+-  ['KeyZ', 'a'], ['KeyX', 'b'], ['ShiftLeft', 'select'], ['ShiftRight', 'select'], ['Enter', 'start'],
++  // WASD = Steuerkreuz, Q = B, E = A (wie auf dem GBA: B links, A rechts), Leertaste = A.
++  // Y = Select, X = Start (event.code ist positionsbasiert: die Taste mit dem Aufdruck Y heisst auf QWERTZ 'KeyZ').
++  // Shift = Select und Enter = Start gehen zusaetzlich.
 +  ['KeyW', 'up'], ['KeyA', 'left'], ['KeyS', 'down'], ['KeyD', 'right'],
-+  ['Space', 'a'], ['KeyQ', 'b'], ['KeyE', 'start'],
-   ['KeyZ', 'a'], ['KeyX', 'b'], ['ShiftLeft', 'select'], ['ShiftRight', 'select'], ['Enter', 'start'],
++  ['KeyQ', 'b'], ['KeyE', 'a'], ['Space', 'a'],
++  ['KeyZ', 'select'], ['KeyX', 'start'], ['ShiftLeft', 'select'], ['ShiftRight', 'select'], ['Enter', 'start'],
    ['ArrowRight', 'right'], ['ArrowLeft', 'left'], ['ArrowUp', 'up'], ['ArrowDown', 'down'],
 -  ['KeyS', 'r'], ['KeyA', 'l'],
 +]);
@@ -61,7 +64,7 @@ index ad1b7a6..84c760d 100644
  const statusEl = document.querySelector('#status');
  const speedButtons = document.querySelectorAll('[data-speed]');
  const speedValue = document.querySelector('#speed-value');
-@@ -803,7 +812,68 @@ function setPressed(name, isPressed) {
+@@ -803,7 +814,68 @@ function setPressed(name, isPressed) {
    if (u16) writeKeys();
  }
  
@@ -130,7 +133,7 @@ index ad1b7a6..84c760d 100644
    const name = keyMap.get(event.code);
    if (!name) return;
    event.preventDefault();
-@@ -817,6 +887,11 @@ window.addEventListener('keyup', (event) => {
+@@ -817,6 +889,11 @@ window.addEventListener('keyup', (event) => {
    setPressed(name, false);
  });
  
@@ -143,7 +146,7 @@ index ad1b7a6..84c760d 100644
  window.addEventListener('pagehide', () => saveFlashIfChanged(true));
  window.addEventListener('visibilitychange', () => {
 diff --git a/web/index.html b/web/index.html
-index 94df239..3005590 100644
+index 94df239..6efce76 100644
 --- a/web/index.html
 +++ b/web/index.html
 @@ -5,15 +5,6 @@
@@ -174,7 +177,7 @@ index 94df239..3005590 100644
      </section>
  
 -    <p class="keys">Keyboard: arrows, Z=A, X=B, Enter=Start, Shift=Select.</p>
-+    <p class="keys">Keyboard: WASD or arrows, Space or Z = A, Q or X = B, E or Enter = Start, Shift = Select. 1 / 2 / 3 = Speed 1x / 2x / 3x.</p>
++    <p class="keys">Keyboard: WASD or arrows, E or Space = A, Q = B, Y = Select, X = Start (Shift = Select, Enter = Start). 1 / 2 / 3 = Speed 1x / 2x / 3x.</p>
    </main>
    <script type="module" src="/web/app.js"></script>
  </body>

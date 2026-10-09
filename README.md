@@ -54,7 +54,7 @@ Alles landet unter `%LOCALAPPDATA%\pokemon-in-claude\`. Es wird nichts außerhal
 
 Der Browser-Bereich muss **sichtbar** sein, sonst bremst der Browser das Spiel auf etwa 6 Bilder pro Sekunde.
 
-Tasten: `W` `A` `S` `D` = Steuerkreuz, `Leertaste` = A, `Q` = B, `E` = Start, `Shift` = Select. Die alten Tasten gehen weiter: Pfeile, `Z` = A, `X` = B, `Enter` = Start.
+Tasten: `W` `A` `S` `D` = Steuerkreuz, `Q` = B, `E` = A (wie auf dem GBA: B links, A rechts), `Y` = Select, `X` = Start. Zusätzlich gehen `Leertaste` = A, `Shift` = Select, `Enter` = Start und die Pfeiltasten. Die Tasten sind positionsbasiert (Aufdruck QWERTZ: `Y` und `X` liegen links unten).
 
 Geschwindigkeit: `1` = 1x, `2` = 2x, `3` = 3x. Auf der Oberfläche gibt es **Quick Save** und **Quick Load**: Sie sichern und laden den ganzen Spielzustand (nur im Arbeitsspeicher, weg nach dem Neuladen der Seite). Der normale Spielstand (Speichern im Spiel) bleibt dabei unberührt.
 

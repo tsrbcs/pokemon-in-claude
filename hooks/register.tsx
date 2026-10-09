@@ -113,7 +113,7 @@ export const register: Register = on => {
     return {
       text:
         start.exitCode === 0
-          ? 'Spielserver laeuft: http://127.0.0.1:' + PORT + '/ (im Browser-Bereich oeffnen). Tasten: WASD, Leertaste=A, Q=B, E=Start, Shift=Select. Spielstand sichern: "Download .sav".'
+          ? 'Spielserver laeuft: http://127.0.0.1:' + PORT + '/ (im Browser-Bereich oeffnen). Tasten: WASD, E=A, Q=B, Y=Select, X=Start (auch Leertaste=A). Spielstand sichern: "Download .sav".'
           : 'Spielserver startet nicht:\n' + start.stdout.trim(),
     }
   })
