@@ -56,6 +56,10 @@ Der Browser-Bereich muss **sichtbar** sein, sonst bremst der Browser das Spiel a
 
 Tasten: `W` `A` `S` `D` = Steuerkreuz, `Leertaste` = A, `Q` = B, `E` = Start, `Shift` = Select. Die alten Tasten gehen weiter: Pfeile, `Z` = A, `X` = B, `Enter` = Start.
 
+Geschwindigkeit: `1` = 1x, `2` = 2x, `3` = 3x. Auf der Oberfläche gibt es **Quick Save** und **Quick Load**: Sie sichern und laden den ganzen Spielzustand (nur im Arbeitsspeicher, weg nach dem Neuladen der Seite). Der normale Spielstand (Speichern im Spiel) bleibt dabei unberührt.
+
+Einen Ton gibt es nicht: Der Port baut keinen Audio-Mixer ein (`SoundMain` ist leer), das Spiel ist stumm.
+
 Der Spielstand liegt im Browser unter `127.0.0.1:8000`. Sichere ihn mit „Download .sav“, ein Browserwechsel oder ein gelöschter Browserspeicher löscht ihn sonst.
 
 ## Meldung einschalten

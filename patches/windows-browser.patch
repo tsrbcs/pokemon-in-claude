@@ -35,10 +35,10 @@ index b7b735d..3d4da24 100644
          text=True,
          capture_output=True,
 diff --git a/web/app.js b/web/app.js
-index ad1b7a6..7717547 100644
+index ad1b7a6..84c760d 100644
 --- a/web/app.js
 +++ b/web/app.js
-@@ -75,9 +75,11 @@ const buttons = {
+@@ -75,12 +75,21 @@ const buttons = {
  };
  
  const keyMap = new Map([
@@ -48,10 +48,89 @@ index ad1b7a6..7717547 100644
    ['KeyZ', 'a'], ['KeyX', 'b'], ['ShiftLeft', 'select'], ['ShiftRight', 'select'], ['Enter', 'start'],
    ['ArrowRight', 'right'], ['ArrowLeft', 'left'], ['ArrowUp', 'up'], ['ArrowDown', 'down'],
 -  ['KeyS', 'r'], ['KeyA', 'l'],
++]);
++
++// Zahlentasten stellen die Geschwindigkeit ein: 1 = 1x, 2 = 2x, 3 = 3x
++const speedKeys = new Map([
++  ['Digit1', 1], ['Numpad1', 1], ['Digit2', 2], ['Numpad2', 2], ['Digit3', 3], ['Numpad3', 3],
  ]);
  
  const canvas = document.querySelector('#screen');
-@@ -817,6 +819,11 @@ window.addEventListener('keyup', (event) => {
++const quickSaveButton = document.querySelector('#quick-save');
++const quickLoadButton = document.querySelector('#quick-load');
+ const statusEl = document.querySelector('#status');
+ const speedButtons = document.querySelectorAll('[data-speed]');
+ const speedValue = document.querySelector('#speed-value');
+@@ -803,7 +812,68 @@ function setPressed(name, isPressed) {
+   if (u16) writeKeys();
+ }
+ 
++// Quick Save / Quick Load: Schnappschuss des ganzen Spielspeichers (nur die belegten 64-KB-Seiten).
++// Der Spielstand im Flash-Speicher bleibt beim Laden unberuehrt, sonst ginge echter Fortschritt verloren.
++const PAGE_BYTES = 65536;
++let quickState = null;
++
++function snapshotPages() {
++  const pages = new Map();
++  const wordsPerPage = PAGE_BYTES / 4;
++  for (let page = 0; page < u32.length / wordsPerPage; page++) {
++    const start = page * wordsPerPage;
++    for (let i = start; i < start + wordsPerPage; i++) {
++      if (u32[i] !== 0) {
++        pages.set(page, u8.slice(page * PAGE_BYTES, (page + 1) * PAGE_BYTES));
++        break;
++      }
++    }
++  }
++  return pages;
++}
++
++function flashQuickLabel(button, text) {
++  const original = button.dataset.label ?? button.textContent;
++  button.dataset.label = original;
++  button.textContent = text;
++  clearTimeout(button.labelTimer);
++  button.labelTimer = setTimeout(() => { button.textContent = original; }, 1500);
++}
++
++function quickSave() {
++  if (!u8) return;
++  quickState = { pages: snapshotPages() };
++  quickLoadButton.disabled = false;
++  flashQuickLabel(quickSaveButton, 'Saved');
++}
++
++function quickLoad() {
++  if (!u8 || !quickState) return;
++  const flash = flashBytes().slice();
++  for (let page = 0; page < u8.length / PAGE_BYTES; page++) {
++    const saved = quickState.pages.get(page);
++    if (saved) u8.set(saved, page * PAGE_BYTES);
++    else u8.fill(0, page * PAGE_BYTES, (page + 1) * PAGE_BYTES);
++  }
++  flashBytes().set(flash);
++  [...pressed].forEach((name) => setPressed(name, false));
++  pendingPresses.clear();
++  writeKeys();
++  flashQuickLabel(quickLoadButton, 'Loaded');
++}
++
++quickSaveButton.addEventListener('click', () => { quickSave(); quickSaveButton.blur(); });
++quickLoadButton.addEventListener('click', () => { quickLoad(); quickLoadButton.blur(); });
++
+ window.addEventListener('keydown', (event) => {
++  const speedForKey = speedKeys.get(event.code);
++  if (speedForKey !== undefined) {
++    if (!event.repeat && !event.ctrlKey && !event.altKey && !event.metaKey) {
++      event.preventDefault();
++      setSpeed(speedForKey);
++    }
++    return;
++  }
+   const name = keyMap.get(event.code);
+   if (!name) return;
+   event.preventDefault();
+@@ -817,6 +887,11 @@ window.addEventListener('keyup', (event) => {
    setPressed(name, false);
  });
  
@@ -64,7 +143,7 @@ index ad1b7a6..7717547 100644
  window.addEventListener('pagehide', () => saveFlashIfChanged(true));
  window.addEventListener('visibilitychange', () => {
 diff --git a/web/index.html b/web/index.html
-index 94df239..3f42cdd 100644
+index 94df239..3005590 100644
 --- a/web/index.html
 +++ b/web/index.html
 @@ -5,15 +5,6 @@
@@ -83,12 +162,19 @@ index 94df239..3f42cdd 100644
  </head>
  <body>
    <main class="shell" aria-label="pokeemerald-wasm emulator">
-@@ -66,7 +57,7 @@
+@@ -61,12 +52,14 @@
+       <div class="utility-controls" aria-label="Save and display controls">
+         <button id="download-save" type="button">Download .sav</button>
+         <label class="upload-save" for="upload-save">Upload .sav</label>
++        <button id="quick-save" type="button">Quick Save</button>
++        <button id="quick-load" type="button" disabled>Quick Load</button>
+         <button id="fullscreen" type="button">Big Picture</button>
+         <input id="upload-save" type="file" accept=".sav,.srm,application/octet-stream" />
        </div>
      </section>
  
 -    <p class="keys">Keyboard: arrows, Z=A, X=B, Enter=Start, Shift=Select.</p>
-+    <p class="keys">Keyboard: WASD or arrows, Space or Z = A, Q or X = B, E or Enter = Start, Shift = Select.</p>
++    <p class="keys">Keyboard: WASD or arrows, Space or Z = A, Q or X = B, E or Enter = Start, Shift = Select. 1 / 2 / 3 = Speed 1x / 2x / 3x.</p>
    </main>
    <script type="module" src="/web/app.js"></script>
  </body>
